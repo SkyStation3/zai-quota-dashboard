@@ -1,0 +1,14 @@
+# Local databases/logs
+history.json
+*.log
+
+# Sensitive key files
+.env
+.env.local
+
+# Dependency directories
+node_modules/
+
+# OS metadata
+.DS_Store
+Thumbs.db
