@@ -973,7 +973,7 @@ const App = () => {
             <div className="flex items-center justify-between gap-4 mb-6">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Icon name="chart" className="text-slate-400 w-5.5 h-5.5" />
+                  <Icon name="chart" className="text-slate-400 w-6 h-6" />
                   Historical Burn Rate Tracking
                 </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Checkpoints logged automatically by server background daemon (hourly)</p>
@@ -1007,55 +1007,6 @@ const App = () => {
             </div>
 
             {renderHistoryChart()}
-
-            {history.length > 0 && (
-              <div className="mt-6 overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
-                  <thead>
-                    <tr className="text-slate-400 font-bold uppercase tracking-wider">
-                      <th className="py-2.5 px-4">Date & Time</th>
-                      <th className="py-2.5 px-4">Account Tier</th>
-                      <th className="py-2.5 px-4 text-center">5h Window Used</th>
-                      <th className="py-2.5 px-4 text-center">Weekly Pool Used</th>
-                      <th className="py-2.5 px-4 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-900 text-slate-600 dark:text-slate-300">
-                    {history.map((pt, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-900/40">
-                        <td className="py-2 px-4 font-mono">{new Date(pt.timestamp).toLocaleString()}</td>
-                        <td className="py-2 px-4 font-bold capitalize text-slate-500">{pt.tier}</td>
-                        <td className="py-2 px-4 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded font-semibold ${
-                            pt.pct5h > 80 ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400' :
-                            pt.pct5h > 50 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300'
-                          }`}>
-                            {pt.pct5h}%
-                          </span>
-                        </td>
-                        <td className="py-2 px-4 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded font-semibold ${
-                            pt.pctWeekly > 80 ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400' :
-                            pt.pctWeekly > 50 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300'
-                          }`}>
-                            {pt.pctWeekly}%
-                          </span>
-                        </td>
-                        <td className="py-2 px-4 text-right">
-                          <button
-                            onClick={() => deleteHistoryItem(pt.timestamp)}
-                            className="p-1 hover:text-red-500 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
-                            title="Delete entry"
-                          >
-                            <Icon name="trash" className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </section>
         </>
       ) : (

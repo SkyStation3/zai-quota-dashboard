@@ -920,7 +920,7 @@ const App = () => {
     className: "text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "chart",
-    className: "text-slate-400 w-5.5 h-5.5"
+    className: "text-slate-400 w-6 h-6"
   }), "Historical Burn Rate Tracking"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-500 dark:text-slate-400 mt-0.5"
   }, "Checkpoints logged automatically by server background daemon (hourly)")), /*#__PURE__*/React.createElement("div", {
@@ -935,49 +935,7 @@ const App = () => {
   }, "Export CSV"), /*#__PURE__*/React.createElement("button", {
     onClick: clearHistory,
     className: "px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
-  }, "Clear")))), renderHistoryChart(), history.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "mt-6 overflow-x-auto"
-  }, /*#__PURE__*/React.createElement("table", {
-    className: "min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
-    className: "text-slate-400 font-bold uppercase tracking-wider"
-  }, /*#__PURE__*/React.createElement("th", {
-    className: "py-2.5 px-4"
-  }, "Date & Time"), /*#__PURE__*/React.createElement("th", {
-    className: "py-2.5 px-4"
-  }, "Account Tier"), /*#__PURE__*/React.createElement("th", {
-    className: "py-2.5 px-4 text-center"
-  }, "5h Window Used"), /*#__PURE__*/React.createElement("th", {
-    className: "py-2.5 px-4 text-center"
-  }, "Weekly Pool Used"), /*#__PURE__*/React.createElement("th", {
-    className: "py-2.5 px-4 text-right"
-  }, "Action"))), /*#__PURE__*/React.createElement("tbody", {
-    className: "divide-y divide-slate-100 dark:divide-slate-900 text-slate-600 dark:text-slate-300"
-  }, history.map((pt, idx) => /*#__PURE__*/React.createElement("tr", {
-    key: idx,
-    className: "hover:bg-slate-50 dark:hover:bg-slate-900/40"
-  }, /*#__PURE__*/React.createElement("td", {
-    className: "py-2 px-4 font-mono"
-  }, new Date(pt.timestamp).toLocaleString()), /*#__PURE__*/React.createElement("td", {
-    className: "py-2 px-4 font-bold capitalize text-slate-500"
-  }, pt.tier), /*#__PURE__*/React.createElement("td", {
-    className: "py-2 px-4 text-center"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: `inline-block px-2 py-0.5 rounded font-semibold ${pt.pct5h > 80 ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400' : pt.pct5h > 50 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-brand-50 text-brand-700 dark:bg-brand-950/30 dark:text-brand-300'}`
-  }, pt.pct5h, "%")), /*#__PURE__*/React.createElement("td", {
-    className: "py-2 px-4 text-center"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: `inline-block px-2 py-0.5 rounded font-semibold ${pt.pctWeekly > 80 ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400' : pt.pctWeekly > 50 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300'}`
-  }, pt.pctWeekly, "%")), /*#__PURE__*/React.createElement("td", {
-    className: "py-2 px-4 text-right"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => deleteHistoryItem(pt.timestamp),
-    className: "p-1 hover:text-red-500 rounded hover:bg-slate-100 dark:hover:bg-slate-800",
-    title: "Delete entry"
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "trash",
-    className: "w-4 h-4"
-  })))))))))) : /*#__PURE__*/React.createElement("section", {
+  }, "Clear")))), renderHistoryChart())) : /*#__PURE__*/React.createElement("section", {
     className: "bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl p-10 shadow-sm text-center"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "lightning",
