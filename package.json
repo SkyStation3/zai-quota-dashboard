@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "babel public/app.js -o public/app.compiled.js --presets=@babel/preset-react"
+    "build": "babel public/app.js -o public/app.compiled.js --presets=@babel/preset-react && tailwindcss -i public/input.css -o public/styles.css --content \"./public/**/*.js\" --content \"./public/**/*.html\" --minify"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,7 @@
   "devDependencies": {
     "@babel/cli": "^7.23.0",
     "@babel/core": "^7.23.0",
-    "@babel/preset-react": "^7.22.0"
+    "@babel/preset-react": "^7.22.0",
+    "tailwindcss": "^3.4.1"
   }
 }
