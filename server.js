@@ -276,10 +276,12 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// Bind strictly to loopback address (127.0.0.1) for local security
-server.listen(PORT, '127.0.0.1', () => {
+const HOST = process.env.HOST || '127.0.0.1';
+
+// Bind to loopback address or configured HOST for security
+server.listen(PORT, HOST, () => {
   console.log(`====================================================`);
   console.log(`Z.ai Quota Dashboard Server running (SSR Mode) at:`);
-  console.log(`http://127.0.0.1:${PORT}`);
+  console.log(`http://${HOST}:${PORT}`);
   console.log(`====================================================`);
 });
