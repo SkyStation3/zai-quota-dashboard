@@ -690,7 +690,7 @@ const App = () => {
   }, pacing5h ? Math.round(pacing5h.usagePercent) : 0, "% Used"), /*#__PURE__*/React.createElement("div", {
     className: "text-xs opacity-75 mt-1"
   }, "Rolling 5-Hour Credit Window")), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 w-full bg-brand-700/50 rounded-full h-2"
+    className: "mt-4 w-full bg-black/25 rounded-full h-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-full h-2 transition-all duration-500",
     style: {

@@ -650,7 +650,7 @@ const App = () => {
                   Rolling 5-Hour Credit Window
                 </div>
               </div>
-              <div className="mt-4 w-full bg-brand-700/50 rounded-full h-2">
+              <div className="mt-4 w-full bg-black/25 rounded-full h-2">
                 <div 
                   className="bg-white rounded-full h-2 transition-all duration-500" 
                   style={{ width: `${pacing5h ? Math.min(100, pacing5h.usagePercent) : 0}%` }}
