@@ -418,6 +418,33 @@ const App = () => {
   const limit5h = quotaData?.limits?.find(l => getWindowMinutes(l) === 300);
   const limitWeekly = quotaData?.limits?.find(l => getWindowMinutes(l) === 10080);
   const limitSearch = quotaData?.limits?.find(l => getWindowMinutes(l) > 10080 || l.type === 'TIME_LIMIT');
+
+  // Estimate absolute token values for TOKENS_LIMIT based on plan level if Z.ai does not return them
+  const level = (quotaData?.level || 'pro').toLowerCase();
+  const TIER_WEEKLY_LIMITS = {
+    lite: 2000000,
+    pro: 5000000,
+    max: 10000000
+  };
+  const TIER_5H_LIMITS = {
+    lite: 400000,
+    pro: 1000000,
+    max: 2000000
+  };
+  if (limitWeekly && limitWeekly.usage === undefined) {
+    const totalEst = TIER_WEEKLY_LIMITS[level] || TIER_WEEKLY_LIMITS.pro;
+    limitWeekly.usage = totalEst;
+    limitWeekly.currentValue = Math.round(totalEst * (limitWeekly.percentage / 100));
+    limitWeekly.remaining = totalEst - limitWeekly.currentValue;
+    limitWeekly.isEstimated = true;
+  }
+  if (limit5h && limit5h.usage === undefined) {
+    const totalEst = TIER_5H_LIMITS[level] || TIER_5H_LIMITS.pro;
+    limit5h.usage = totalEst;
+    limit5h.currentValue = Math.round(totalEst * (limit5h.percentage / 100));
+    limit5h.remaining = totalEst - limit5h.currentValue;
+    limit5h.isEstimated = true;
+  }
   const pacing5h = limit5h ? getPacingData(limit5h) : null;
   const pacingWeekly = limitWeekly ? getPacingData(limitWeekly) : null;
   const pacingSearch = limitSearch ? getPacingData(limitSearch) : null;
@@ -714,7 +741,7 @@ const App = () => {
     className: "text-3xl font-black text-slate-900 dark:text-white"
   }, limit5h.currentValue.toLocaleString()), /*#__PURE__*/React.createElement("span", {
     className: "text-slate-400 text-sm font-semibold"
-  }, "/ ", limit5h.usage.toLocaleString(), " credits used")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+  }, "/ ", limit5h.usage.toLocaleString(), " ", limit5h.isEstimated ? 'tokens (est.)' : 'credits used')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "text-3xl font-black text-slate-900 dark:text-white"
   }, pacing5h.usagePercent.toFixed(0), "%"), /*#__PURE__*/React.createElement("span", {
     className: "text-slate-400 text-sm font-semibold"
@@ -722,7 +749,7 @@ const App = () => {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs font-bold text-slate-500 mb-1"
-  }, /*#__PURE__*/React.createElement("span", null, pacing5h.usagePercent.toFixed(0), "% consumed"), limit5h.remaining !== undefined ? /*#__PURE__*/React.createElement("span", null, limit5h.remaining.toLocaleString(), " credits left") : /*#__PURE__*/React.createElement("span", null, (100 - pacing5h.usagePercent).toFixed(0), "% left")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, pacing5h.usagePercent.toFixed(0), "% consumed"), limit5h.remaining !== undefined ? /*#__PURE__*/React.createElement("span", null, limit5h.remaining.toLocaleString(), " ", limit5h.isEstimated ? 'tokens left (est.)' : 'credits left') : /*#__PURE__*/React.createElement("span", null, (100 - pacing5h.usagePercent).toFixed(0), "% left")), /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-slate-100 dark:bg-slate-900 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/30 dark:border-slate-800/40"
   }, /*#__PURE__*/React.createElement("div", {
     className: `h-full rounded-full transition-all duration-500 ${pacing5h.usagePercent > 85 ? 'bg-red-500' : pacing5h.usagePercent > 60 ? 'bg-amber-500' : 'bg-brand-500'}`,
@@ -790,7 +817,7 @@ const App = () => {
     className: "text-3xl font-black text-slate-900 dark:text-white"
   }, limitWeekly.currentValue.toLocaleString()), /*#__PURE__*/React.createElement("span", {
     className: "text-slate-400 text-sm font-semibold"
-  }, "/ ", limitWeekly.usage.toLocaleString(), " credits used")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+  }, "/ ", limitWeekly.usage.toLocaleString(), " ", limitWeekly.isEstimated ? 'tokens (est.)' : 'credits used')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "text-3xl font-black text-slate-900 dark:text-white"
   }, pacingWeekly.usagePercent.toFixed(0), "%"), /*#__PURE__*/React.createElement("span", {
     className: "text-slate-400 text-sm font-semibold"
@@ -798,7 +825,7 @@ const App = () => {
     className: "mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs font-bold text-slate-500 mb-1"
-  }, /*#__PURE__*/React.createElement("span", null, pacingWeekly.usagePercent.toFixed(0), "% consumed"), limitWeekly.remaining !== undefined ? /*#__PURE__*/React.createElement("span", null, limitWeekly.remaining.toLocaleString(), " credits left") : /*#__PURE__*/React.createElement("span", null, (100 - pacingWeekly.usagePercent).toFixed(0), "% left")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, pacingWeekly.usagePercent.toFixed(0), "% consumed"), limitWeekly.remaining !== undefined ? /*#__PURE__*/React.createElement("span", null, limitWeekly.remaining.toLocaleString(), " ", limitWeekly.isEstimated ? 'tokens left (est.)' : 'credits left') : /*#__PURE__*/React.createElement("span", null, (100 - pacingWeekly.usagePercent).toFixed(0), "% left")), /*#__PURE__*/React.createElement("div", {
     className: "w-full bg-slate-100 dark:bg-slate-900 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/30 dark:border-slate-800/40"
   }, /*#__PURE__*/React.createElement("div", {
     className: `h-full rounded-full transition-all duration-500 ${pacingWeekly.usagePercent > 85 ? 'bg-red-500' : pacingWeekly.usagePercent > 60 ? 'bg-amber-500' : 'bg-emerald-500'}`,

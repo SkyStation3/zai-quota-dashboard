@@ -352,6 +352,27 @@ const App = () => {
   const limitWeekly = quotaData?.limits?.find(l => getWindowMinutes(l) === 10080);
   const limitSearch = quotaData?.limits?.find(l => getWindowMinutes(l) > 10080 || l.type === 'TIME_LIMIT');
 
+  // Estimate absolute token values for TOKENS_LIMIT based on plan level if Z.ai does not return them
+  const level = (quotaData?.level || 'pro').toLowerCase();
+  const TIER_WEEKLY_LIMITS = { lite: 2000000, pro: 5000000, max: 10000000 };
+  const TIER_5H_LIMITS = { lite: 400000, pro: 1000000, max: 2000000 };
+
+  if (limitWeekly && limitWeekly.usage === undefined) {
+    const totalEst = TIER_WEEKLY_LIMITS[level] || TIER_WEEKLY_LIMITS.pro;
+    limitWeekly.usage = totalEst;
+    limitWeekly.currentValue = Math.round(totalEst * (limitWeekly.percentage / 100));
+    limitWeekly.remaining = totalEst - limitWeekly.currentValue;
+    limitWeekly.isEstimated = true;
+  }
+
+  if (limit5h && limit5h.usage === undefined) {
+    const totalEst = TIER_5H_LIMITS[level] || TIER_5H_LIMITS.pro;
+    limit5h.usage = totalEst;
+    limit5h.currentValue = Math.round(totalEst * (limit5h.percentage / 100));
+    limit5h.remaining = totalEst - limit5h.currentValue;
+    limit5h.isEstimated = true;
+  }
+
   const pacing5h = limit5h ? getPacingData(limit5h) : null;
   const pacingWeekly = limitWeekly ? getPacingData(limitWeekly) : null;
   const pacingSearch = limitSearch ? getPacingData(limitSearch) : null;
@@ -683,7 +704,7 @@ const App = () => {
                         <span className="text-3xl font-black text-slate-900 dark:text-white">
                           {limit5h.currentValue.toLocaleString()}
                         </span>
-                        <span className="text-slate-400 text-sm font-semibold">/ {limit5h.usage.toLocaleString()} credits used</span>
+                        <span className="text-slate-400 text-sm font-semibold">/ {limit5h.usage.toLocaleString()} {limit5h.isEstimated ? 'tokens (est.)' : 'credits used'}</span>
                       </>
                     ) : (
                       <>
@@ -700,7 +721,7 @@ const App = () => {
                     <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                       <span>{pacing5h.usagePercent.toFixed(0)}% consumed</span>
                       {limit5h.remaining !== undefined ? (
-                        <span>{limit5h.remaining.toLocaleString()} credits left</span>
+                        <span>{limit5h.remaining.toLocaleString()} {limit5h.isEstimated ? 'tokens left (est.)' : 'credits left'}</span>
                       ) : (
                         <span>{(100 - pacing5h.usagePercent).toFixed(0)}% left</span>
                       )}
@@ -790,7 +811,7 @@ const App = () => {
                         <span className="text-3xl font-black text-slate-900 dark:text-white">
                           {limitWeekly.currentValue.toLocaleString()}
                         </span>
-                        <span className="text-slate-400 text-sm font-semibold">/ {limitWeekly.usage.toLocaleString()} credits used</span>
+                        <span className="text-slate-400 text-sm font-semibold">/ {limitWeekly.usage.toLocaleString()} {limitWeekly.isEstimated ? 'tokens (est.)' : 'credits used'}</span>
                       </>
                     ) : (
                       <>
@@ -807,7 +828,7 @@ const App = () => {
                     <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
                       <span>{pacingWeekly.usagePercent.toFixed(0)}% consumed</span>
                       {limitWeekly.remaining !== undefined ? (
-                        <span>{limitWeekly.remaining.toLocaleString()} credits left</span>
+                        <span>{limitWeekly.remaining.toLocaleString()} {limitWeekly.isEstimated ? 'tokens left (est.)' : 'credits left'}</span>
                       ) : (
                         <span>{(100 - pacingWeekly.usagePercent).toFixed(0)}% left</span>
                       )}
