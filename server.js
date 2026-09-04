@@ -170,35 +170,10 @@ const server = http.createServer((req, res) => {
   // Logging
   console.log(`[${new Date().toISOString()}] ${req.method} ${pathname}`);
 
-  // Endpoint to clear historical data
-  if (req.method === 'POST' && pathname === '/api/history/clear') {
-    fs.writeFileSync(HISTORY_FILE, JSON.stringify([]));
-    console.log(`[History Action] History log cleared by client.`);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true }));
-    return;
-  }
-
-  // Endpoint to delete a specific checkpoint
-  if (req.method === 'POST' && pathname === '/api/history/delete') {
-    let body = '';
-    req.on('data', chunk => body += chunk);
-    req.on('end', () => {
-      try {
-        const { timestamp } = JSON.parse(body);
-        if (fs.existsSync(HISTORY_FILE)) {
-          let history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')) || [];
-          history = history.filter(item => item.timestamp !== timestamp);
-          fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
-          console.log(`[History Action] Deleted checkpoint with timestamp: ${timestamp}`);
-        }
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true }));
-      } catch (e) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Bad Request', details: e.message }));
-      }
-    });
+  // Enforce strictly read-only methods
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.writeHead(405, { 'Content-Type': 'text/plain' });
+    res.end('405 Method Not Allowed');
     return;
   }
 

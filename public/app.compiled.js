@@ -282,50 +282,6 @@ const App = () => {
     setLoading(true);
     window.location.reload();
   };
-  const handleAddManualCheckpoint = () => {
-    if (isMockMode) return;
-    handleForceRefresh(); // reloading page forces a backend record check
-  };
-  const clearHistory = () => {
-    if (isMockMode) {
-      setHistory([]);
-      return;
-    }
-    if (confirm('Are you sure you want to clear historical tracking data on the server?')) {
-      setLoading(true);
-      fetch('/api/history/clear', {
-        method: 'POST'
-      }).then(res => res.json()).then(() => {
-        window.location.reload();
-      }).catch(err => {
-        setLoading(false);
-        alert('Failed to clear history: ' + err.message);
-      });
-    }
-  };
-  const deleteHistoryItem = timestamp => {
-    if (isMockMode) {
-      setHistory(prev => prev.filter(item => item.timestamp !== timestamp));
-      return;
-    }
-    if (confirm('Are you sure you want to delete this historical checkpoint?')) {
-      setLoading(true);
-      fetch('/api/history/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          timestamp
-        })
-      }).then(res => res.json()).then(() => {
-        window.location.reload();
-      }).catch(err => {
-        setLoading(false);
-        alert('Failed to delete checkpoint: ' + err.message);
-      });
-    }
-  };
   const exportHistoryToCSV = () => {
     if (history.length === 0) return;
     let csv = 'Timestamp,Plan Tier,5h Usage %,Weekly Usage %\n';
@@ -950,19 +906,12 @@ const App = () => {
     className: "text-slate-400 w-6 h-6"
   }), "Historical Burn Rate Tracking"), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-500 dark:text-slate-400 mt-0.5"
-  }, "Checkpoints logged automatically by server background daemon (hourly)")), /*#__PURE__*/React.createElement("div", {
+  }, "Checkpoints logged automatically by server background daemon (hourly)")), history.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: handleAddManualCheckpoint,
-    className: "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors",
-    title: "Force a backend update & checkpoint log"
-  }, "Log Point"), history.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     onClick: exportHistoryToCSV,
     className: "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
-  }, "Export CSV"), /*#__PURE__*/React.createElement("button", {
-    onClick: clearHistory,
-    className: "px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
-  }, "Clear")))), renderHistoryChart())) : /*#__PURE__*/React.createElement("section", {
+  }, "Export CSV"))), renderHistoryChart())) : /*#__PURE__*/React.createElement("section", {
     className: "bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl p-10 shadow-sm text-center"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "lightning",
