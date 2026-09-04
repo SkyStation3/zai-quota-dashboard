@@ -50,8 +50,19 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-// Helper: Fetch quota data from Z.ai API server-side
-const fetchQuotaData = () => {
+// In-memory cache for Z.ai quota API responses (15-second TTL)
+let cachedQuotaData = null;
+let lastQuotaFetchTime = 0;
+const QUOTA_CACHE_TTL_MS = 15 * 1000;
+
+// Helper: Fetch quota data from Z.ai API server-side with throttling/caching
+const fetchQuotaData = (forceRefresh = false) => {
+  const now = Date.now();
+  if (!forceRefresh && cachedQuotaData && (now - lastQuotaFetchTime < QUOTA_CACHE_TTL_MS)) {
+    console.log(`[Server] Returning cached quota metrics (${Math.round((now - lastQuotaFetchTime) / 1000)}s old).`);
+    return Promise.resolve(cachedQuotaData);
+  }
+
   return new Promise((resolve, reject) => {
     if (!API_KEY) {
       console.warn(`[Server Warning] API_KEY environment variable is not defined.`);
@@ -74,6 +85,8 @@ const fetchQuotaData = () => {
             const parsed = JSON.parse(body);
             if (parsed.success && parsed.data) {
               console.log(`[Server] Quota data successfully retrieved.`);
+              cachedQuotaData = parsed.data;
+              lastQuotaFetchTime = Date.now();
               return resolve(parsed.data);
             }
           } catch (e) {
@@ -82,13 +95,13 @@ const fetchQuotaData = () => {
         } else {
           console.error(`[Server] Z.ai API returned HTTP status code: ${res.statusCode}`);
         }
-        resolve(null);
+        resolve(cachedQuotaData); // fallback to cached data if upstream transiently errors
       });
     });
     
     req.on('error', (err) => {
       console.error(`[Server] Z.ai API request failed: ${err.message}`);
-      resolve(null);
+      resolve(cachedQuotaData); // fallback to cached data
     });
     
     req.end();
@@ -170,6 +183,11 @@ const server = http.createServer((req, res) => {
   // Logging
   console.log(`[${new Date().toISOString()}] ${req.method} ${pathname}`);
 
+  // Add standard security headers to all responses
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   // Enforce strictly read-only methods
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     res.writeHead(405, { 'Content-Type': 'text/plain' });
@@ -214,6 +232,8 @@ const server = http.createServer((req, res) => {
         
         const modifiedHtml = html.replace('</head>', `${dataInjection}\n</head>`);
         
+        // Prevent caching of dynamic authenticated quota data
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(modifiedHtml);
       });
@@ -224,11 +244,22 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Static files server
-  const filePath = path.resolve(PUBLIC_DIR, pathname.replace(/^\//, ''));
+  // Static files server with defense-in-depth path traversal prevention
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(pathname);
+  } catch (e) {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('400 Bad Request');
+    return;
+  }
 
-  // Security check to avoid directory traversal
-  if (!filePath.startsWith(PUBLIC_DIR)) {
+  const safeRelativePath = path.normalize(decodedPath.replace(/^\/+/, ''));
+  const filePath = path.resolve(PUBLIC_DIR, safeRelativePath);
+  const relativeToPublic = path.relative(PUBLIC_DIR, filePath);
+
+  // Security check to avoid directory traversal (defense-in-depth)
+  if (relativeToPublic.startsWith('..') || path.isAbsolute(relativeToPublic) || (!filePath.startsWith(PUBLIC_DIR + path.sep) && filePath !== PUBLIC_DIR)) {
     console.warn(`[Security Blocked] Attempted directory traversal block: ${pathname}`);
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('403 Forbidden');
