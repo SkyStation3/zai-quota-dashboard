@@ -30,8 +30,8 @@ A lightweight, zero-dependency Server-Side Rendered (SSR) dashboard to monitor a
 
 ### Step 1: Clone the Repository
 ```bash
-git clone http://<your-gitea-host>/<user>/zai-usage-dashboard.git
-cd zai-usage-dashboard
+git clone https://github.com/SkyStation3/zai-quota-dashboard.git
+cd zai-quota-dashboard
 ```
 
 ### Step 2: Configure Environment Variables
