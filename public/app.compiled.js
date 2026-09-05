@@ -912,15 +912,25 @@ const App = () => {
     onClick: exportHistoryToCSV,
     className: "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
   }, "Export CSV"))), renderHistoryChart())) : /*#__PURE__*/React.createElement("section", {
-    className: "bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl p-10 shadow-sm text-center"
+    className: "bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl p-8 shadow-sm text-center max-w-2xl mx-auto my-6"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-12 h-12 mx-auto mb-4 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"
   }, /*#__PURE__*/React.createElement(Icon, {
-    name: "lightning",
-    className: "w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-4 animate-bounce"
-  }), /*#__PURE__*/React.createElement("h2", {
+    name: "alert",
+    className: "w-6 h-6"
+  })), /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-bold text-slate-800 dark:text-white"
-  }, "Connecting to Z.ai API Service..."), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-400 mt-1 max-w-md mx-auto"
-  }, "Loading your account's quota limits and rolling cycles.")), /*#__PURE__*/React.createElement("footer", {
+  }, window.__API_ERROR__ === 'API_KEY_MISSING' ? 'No Z.ai API Key Configured' : window.__API_ERROR__ === 'API_KEY_INVALID' ? 'Invalid Z.ai API Key' : 'Unable to Connect to Z.ai'), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-lg mx-auto"
+  }, window.__API_ERROR__ === 'API_KEY_MISSING' ? 'No Z_AI_API_KEY environment variable was detected on the server. Please add your key to .env and restart the service.' : window.__API_ERROR__ === 'API_KEY_INVALID' ? 'Z.ai rejected the configured API key (401/403 Unauthorized). Please verify that your Z_AI_API_KEY in .env is active and correct.' : 'The server could not retrieve quota data from the upstream Z.ai API. If you see empty metrics, verify your Z_AI_API_KEY in .env and check server connectivity.'), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 flex justify-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setIsMockMode(true),
+    className: "px-4 py-2 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-sm"
+  }, "Try Simulation / Preview Mode"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => window.location.reload(),
+    className: "px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+  }, "Retry Connection"))), /*#__PURE__*/React.createElement("footer", {
     className: "mt-8 bg-slate-100 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-6 text-sm text-slate-500 dark:text-slate-400"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "font-bold text-slate-800 dark:text-slate-300 mb-3 flex items-center gap-1.5"

@@ -970,12 +970,36 @@ const App = () => {
           </section>
         </>
       ) : (
-        <section className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl p-10 shadow-sm text-center">
-          <Icon name="lightning" className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-700 mb-4 animate-bounce" />
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white">Connecting to Z.ai API Service...</h2>
-          <p className="text-sm text-slate-400 mt-1 max-w-md mx-auto">
-            Loading your account's quota limits and rolling cycles.
+        <section className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-2xl p-8 shadow-sm text-center max-w-2xl mx-auto my-6">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <Icon name="alert" className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+            {window.__API_ERROR__ === 'API_KEY_MISSING' ? 'No Z.ai API Key Configured' :
+             window.__API_ERROR__ === 'API_KEY_INVALID' ? 'Invalid Z.ai API Key' :
+             'Unable to Connect to Z.ai'}
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-lg mx-auto">
+            {window.__API_ERROR__ === 'API_KEY_MISSING'
+              ? 'No Z_AI_API_KEY environment variable was detected on the server. Please add your key to .env and restart the service.'
+              : window.__API_ERROR__ === 'API_KEY_INVALID'
+              ? 'Z.ai rejected the configured API key (401/403 Unauthorized). Please verify that your Z_AI_API_KEY in .env is active and correct.'
+              : 'The server could not retrieve quota data from the upstream Z.ai API. If you see empty metrics, verify your Z_AI_API_KEY in .env and check server connectivity.'}
           </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <button
+              onClick={() => setIsMockMode(true)}
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-sm"
+            >
+              Try Simulation / Preview Mode
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
         </section>
       )}
 

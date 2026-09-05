@@ -9,6 +9,7 @@ const envPath = path.resolve(__dirname, '.env');
 if (fs.existsSync(envPath)) {
   try {
     const envContent = fs.readFileSync(envPath, 'utf-8');
+    const parsedFileEnv = {};
     envContent.split(/\r?\n/).forEach(line => {
       const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
       if (match) {
@@ -18,12 +19,15 @@ if (fs.existsSync(envPath)) {
         if (value.length > 0 && (value.startsWith('"') || value.startsWith("'")) && value.endsWith(value[0])) {
           value = value.substring(1, value.length - 1);
         }
-        // Save to environment
-        if (!process.env[key]) {
-          process.env[key] = value;
-        }
+        parsedFileEnv[key] = value;
       }
     });
+    // Apply file env variables to process.env (system environment variables take priority)
+    for (const [key, value] of Object.entries(parsedFileEnv)) {
+      if (!process.env[key]) {
+        process.env[key] = value;
+      }
+    }
     console.log(`[Config] Successfully loaded local .env configurations.`);
   } catch (e) {
     console.error(`[Config Warning] Failed to read .env file: ${e.message}`);
@@ -53,6 +57,7 @@ const MIME_TYPES = {
 // In-memory cache for Z.ai quota API responses (15-second TTL)
 let cachedQuotaData = null;
 let lastQuotaFetchTime = 0;
+let lastApiError = null;
 const QUOTA_CACHE_TTL_MS = 15 * 1000;
 
 // Helper: Fetch quota data from Z.ai API server-side with throttling/caching
@@ -66,6 +71,7 @@ const fetchQuotaData = (forceRefresh = false) => {
   return new Promise((resolve, reject) => {
     if (!API_KEY) {
       console.warn(`[Server Warning] API_KEY environment variable is not defined.`);
+      lastApiError = 'API_KEY_MISSING';
       return resolve(null); // No API Key set on server
     }
     
@@ -87,13 +93,19 @@ const fetchQuotaData = (forceRefresh = false) => {
               console.log(`[Server] Quota data successfully retrieved.`);
               cachedQuotaData = parsed.data;
               lastQuotaFetchTime = Date.now();
+              lastApiError = null;
               return resolve(parsed.data);
             }
           } catch (e) {
             console.error(`[Server] Error parsing Z.ai JSON response.`);
+            lastApiError = 'JSON_PARSE_ERROR';
           }
+        } else if (res.statusCode === 401 || res.statusCode === 403) {
+          console.error(`[Server] Z.ai API rejected API key (Status ${res.statusCode}).`);
+          lastApiError = 'API_KEY_INVALID';
         } else {
           console.error(`[Server] Z.ai API returned HTTP status code: ${res.statusCode}`);
+          lastApiError = `UPSTREAM_${res.statusCode}`;
         }
         resolve(cachedQuotaData); // fallback to cached data if upstream transiently errors
       });
@@ -101,6 +113,7 @@ const fetchQuotaData = (forceRefresh = false) => {
     
     req.on('error', (err) => {
       console.error(`[Server] Z.ai API request failed: ${err.message}`);
+      lastApiError = 'NETWORK_ERROR';
       resolve(cachedQuotaData); // fallback to cached data
     });
     
@@ -235,6 +248,7 @@ const server = http.createServer((req, res) => {
     window.__INITIAL_DATA__ = ${safeJson(quotaData)};
     window.__HISTORY_DATA__ = ${safeJson(historyData)};
     window.__SERVER_CONFIGURED__ = ${!!API_KEY};
+    window.__API_ERROR__ = ${safeJson(lastApiError)};
     window.__SERVER_TIMESTAMP__ = ${Date.now()};
   </script>`;
         

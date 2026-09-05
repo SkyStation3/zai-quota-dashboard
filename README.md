@@ -116,9 +116,11 @@ http://localhost:3000
 | Variable | Default | Description |
 | :--- | :--- | :--- |
 | `Z_AI_API_KEY` | *(Required)* | Your Z.ai API key obtained from [z.ai](https://z.ai). |
-| `HOST` | `127.0.0.1` | Network interface to bind (`0.0.0.0` for LAN/Docker, `127.0.0.1` for loopback/tunnel only). |
+| `HOST` | `0.0.0.0` | Network interface to bind (`0.0.0.0` for LAN/Docker, `127.0.0.1` for loopback/tunnel only). |
 | `PORT` | `3000` | HTTP port the server listens on. |
 | `HISTORY_FILE`| `./history.json` | Path where historical usage checkpoints are persisted. |
+
+> **Note on `.env` parsing**: System/shell environment variables take precedence over values defined in `.env`. Within `.env` itself, later lines will override earlier lines.
 
 ---
 
@@ -128,3 +130,9 @@ http://localhost:3000
 - **Read-Only**: Zero mutating endpoints (`POST`, `PUT`, `DELETE` are rejected with HTTP 405).
 - **Backend Caching**: 15-second in-memory cache on Z.ai lookups to avoid rate limiting.
 - **Zero Production npm Dependencies**: Runtime runs strictly on native Node.js core modules (`http`, `https`, `fs`, `path`, `url`, `crypto`).
+
+---
+
+## 📄 License
+
+This project is licensed under the **BSD Zero Clause License (0BSD)** - see the [LICENSE](LICENSE) file for details. Free for all commercial and private use with zero restrictions.
