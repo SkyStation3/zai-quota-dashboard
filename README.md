@@ -26,7 +26,20 @@ A lightweight, zero-dependency Server-Side Rendered (SSR) dashboard to monitor a
 ## 🚀 Running Locally (Native Node.js)
 
 ### Prerequisites
-- Node.js 18+ (no external production dependencies required)
+- Node.js 18+ *(no external production dependencies required)*
+
+<details>
+<summary><b>📦 Need to install Node.js on a fresh Ubuntu / Debian server?</b> (Click to expand)</summary>
+
+```bash
+# Install Node.js 20 LTS via NodeSource
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node -v
+```
+</details>
 
 ### Step 1: Clone the Repository
 ```bash
