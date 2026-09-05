@@ -78,7 +78,7 @@ http://localhost:3000
 
 ---
 
-## 🐳 Running with Docker (Bonus Points!)
+## 🐳 Running with Docker
 
 ### Option A: Docker Compose (Recommended)
 
