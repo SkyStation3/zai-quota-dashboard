@@ -325,6 +325,16 @@ const App = () => {
     let status = 'safe';
     let label = 'Conservative';
     let description = 'Your consumption rate is safely below the time progression. Keep coding!';
+    let earlyRunoutMs = null;
+    let msUntilExhaustion = null;
+    if (usagePercent > 0 && usagePercent < 95 && timeElapsedMs > 30000) {
+      const remainingPercent = 100 - usagePercent;
+      const burnRatePerMs = usagePercent / timeElapsedMs;
+      msUntilExhaustion = remainingPercent / burnRatePerMs;
+      if (msUntilExhaustion < timeRemainingMs) {
+        earlyRunoutMs = timeRemainingMs - msUntilExhaustion;
+      }
+    }
     if (usagePercent >= 95) {
       status = 'critical';
       label = 'Exhausted';
@@ -332,11 +342,11 @@ const App = () => {
     } else if (difference > 25) {
       status = 'critical';
       label = 'Over-Pacing (Critical)';
-      description = 'Burning quota extremely fast! You will lock out soon unless you slow down.';
+      description = earlyRunoutMs && earlyRunoutMs > 60000 ? `At this rate, estimated to run out ~${formatDurationApprox(earlyRunoutMs)} before window refresh.` : 'Burning quota extremely fast! You will lock out soon unless you slow down.';
     } else if (difference > 10) {
       status = 'warning';
       label = 'Over-Pacing (Warning)';
-      description = 'You are consuming quota faster than the time left. Pace yourself to avoid lockout.';
+      description = earlyRunoutMs && earlyRunoutMs > 60000 ? `At this rate, estimated to run out ~${formatDurationApprox(earlyRunoutMs)} before window refresh.` : 'You are consuming quota faster than the time left. Pace yourself to avoid lockout.';
     } else if (difference > -10) {
       status = 'steady';
       label = 'Balanced';
@@ -349,8 +359,25 @@ const App = () => {
       difference,
       status,
       label,
-      description
+      description,
+      earlyRunoutMs
     };
+  };
+
+  // Format duration into approximate human string (e.g. "3d 12h", "1h 45m", "15m")
+  const formatDurationApprox = ms => {
+    if (ms <= 0) return '0m';
+    const totalMins = Math.round(ms / (60 * 1000));
+    const days = Math.floor(totalMins / (24 * 60));
+    const hours = Math.floor(totalMins % (24 * 60) / 60);
+    const mins = totalMins % 60;
+    if (days > 0) {
+      return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+    }
+    if (hours > 0) {
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    }
+    return `${mins}m`;
   };
 
   // Format milliseconds into human string
@@ -741,7 +768,7 @@ const App = () => {
       width: `${pacing5h.timeElapsedPercent}%`
     }
   }))), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-400 mt-3 italic"
+    className: `text-[11px] mt-3 italic ${pacing5h.status === 'critical' ? 'text-red-600 dark:text-red-400 font-medium' : pacing5h.status === 'warning' ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-slate-400'}`
   }, pacing5h.description))), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 dark:border-slate-900 pt-4 mt-auto"
   }, /*#__PURE__*/React.createElement("div", {
@@ -817,7 +844,7 @@ const App = () => {
       width: `${pacingWeekly.timeElapsedPercent}%`
     }
   }))), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-400 mt-3 italic"
+    className: `text-[11px] mt-3 italic ${pacingWeekly.status === 'critical' ? 'text-red-600 dark:text-red-400 font-medium' : pacingWeekly.status === 'warning' ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-slate-400'}`
   }, pacingWeekly.description))), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 dark:border-slate-900 pt-4 mt-auto"
   }, /*#__PURE__*/React.createElement("div", {
