@@ -213,6 +213,92 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Read-only JSON Stats API endpoint
+  if (pathname === '/api/stats' || pathname === '/api/quota') {
+    fetchQuotaData().then(quotaData => {
+      if (!quotaData) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.writeHead(503, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          error: lastApiError || 'UNAVAILABLE',
+          message: 'Unable to retrieve quota data from upstream Z.ai API.'
+        }));
+        return;
+      }
+
+      const level = (quotaData.level || 'pro').toLowerCase();
+      const TIER_WEEKLY_LIMITS = { lite: 2000000, pro: 5000000, max: 10000000 };
+      const TIER_5H_LIMITS = { lite: 400000, pro: 1000000, max: 2000000 };
+
+      const limit5h = quotaData.limits?.find(l => getWindowMinutes(l) === 300);
+      const limitWeekly = quotaData.limits?.find(l => getWindowMinutes(l) === 10080);
+      const limitSearch = quotaData.limits?.find(l => getWindowMinutes(l) > 10080 || l.type === 'TIME_LIMIT');
+
+      const now = Date.now();
+
+      const processTokensLimit = (limit, tierLimits, windowMinutes) => {
+        if (!limit) return null;
+        const totalEst = tierLimits[level] || tierLimits.pro;
+        const percentage = limit.percentage !== undefined ? limit.percentage : 0;
+        const usedEst = Math.round(totalEst * (percentage / 100));
+        const remainingEst = totalEst - usedEst;
+        const durationMs = windowMinutes * 60 * 1000;
+        const timeRemainingMs = Math.max(0, limit.nextResetTime - now);
+        const timeElapsedMs = Math.max(0, durationMs - timeRemainingMs);
+        const timeElapsedPercent = durationMs > 0 ? (timeElapsedMs / durationMs) * 100 : 100;
+        const difference = percentage - timeElapsedPercent;
+
+        let earlyRunoutMs = null;
+        if (percentage > 0 && percentage < 95 && timeElapsedMs > 30000) {
+          const burnRatePerMs = percentage / timeElapsedMs;
+          const msUntilExhaustion = (100 - percentage) / burnRatePerMs;
+          if (msUntilExhaustion < timeRemainingMs) {
+            earlyRunoutMs = timeRemainingMs - msUntilExhaustion;
+          }
+        }
+
+        return {
+          usagePercent: percentage,
+          timeElapsedPercent: Number(timeElapsedPercent.toFixed(1)),
+          pacingDifferencePercent: Number(difference.toFixed(1)),
+          estimatedUsedTokens: usedEst,
+          estimatedRemainingTokens: remainingEst,
+          estimatedTotalTokens: totalEst,
+          nextResetTime: limit.nextResetTime,
+          nextResetIso: new Date(limit.nextResetTime).toISOString(),
+          timeRemainingMs,
+          earlyRunoutMs
+        };
+      };
+
+      const responsePayload = {
+        success: true,
+        planTier: quotaData.level || 'pro',
+        timestamp: now,
+        rolling5h: processTokensLimit(limit5h, TIER_5H_LIMITS, 300),
+        weekly: processTokensLimit(limitWeekly, TIER_WEEKLY_LIMITS, 10080),
+        mcpSearch: limitSearch ? {
+          usedQueries: limitSearch.currentValue || 0,
+          totalQueries: limitSearch.usage || 1000,
+          remainingQueries: limitSearch.remaining || 1000,
+          usagePercent: limitSearch.percentage || 0,
+          nextResetTime: limitSearch.nextResetTime,
+          nextResetIso: new Date(limitSearch.nextResetTime).toISOString(),
+          usageDetails: limitSearch.usageDetails || []
+        } : null
+      };
+
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(responsePayload, null, 2));
+    }).catch(err => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'SERVER_ERROR' }));
+    });
+    return;
+  }
+
   // Server-Side Rendering of index.html
   if (pathname === '/' || pathname === '/index.html') {
     const filePath = path.resolve(PUBLIC_DIR, 'index.html');

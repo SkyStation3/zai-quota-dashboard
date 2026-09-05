@@ -141,6 +141,60 @@ http://localhost:3000
 
 ---
 
+## 🔌 Read-Only Stats API
+
+The server exposes a lightweight, strictly read-only JSON endpoint at `GET /api/stats` (or `GET /api/quota`) for easy integration into status bars, home automations (Home Assistant), Waybar, Polybar, or scripts.
+
+### Example Request
+```bash
+curl -s http://localhost:3000/api/stats
+```
+
+### Example Response
+```json
+{
+  "success": true,
+  "planTier": "pro",
+  "timestamp": 1788628163562,
+  "rolling5h": {
+    "usagePercent": 37,
+    "timeElapsedPercent": 32.4,
+    "pacingDifferencePercent": 4.6,
+    "estimatedUsedTokens": 370000,
+    "estimatedRemainingTokens": 630000,
+    "estimatedTotalTokens": 1000000,
+    "nextResetTime": 1788640000000,
+    "nextResetIso": "2026-09-06T06:40:00.000Z",
+    "timeRemainingMs": 11836438,
+    "earlyRunoutMs": null
+  },
+  "weekly": {
+    "usagePercent": 19,
+    "timeElapsedPercent": 14.2,
+    "pacingDifferencePercent": 4.8,
+    "estimatedUsedTokens": 950000,
+    "estimatedRemainingTokens": 4050000,
+    "estimatedTotalTokens": 5000000,
+    "nextResetTime": 1789140480000,
+    "nextResetIso": "2026-09-11T23:28:00.000Z",
+    "timeRemainingMs": 512316438,
+    "earlyRunoutMs": null
+  },
+  "mcpSearch": {
+    "usedQueries": 0,
+    "totalQueries": 1000,
+    "remainingQueries": 1000,
+    "usagePercent": 0,
+    "nextResetTime": 1790000000000,
+    "nextResetIso": "2026-09-21T22:13:20.000Z",
+    "usageDetails": []
+  }
+}
+```
+*(Responses automatically leverage the server's 15-second in-memory cache, so frequent polling will not exhaust Z.ai API rate limits).*
+
+---
+
 ## 🔒 Security & Architecture Overview
 
 - **No Upstream Proxying**: The server does not proxy arbitrary completion requests.
