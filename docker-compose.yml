@@ -1,0 +1,22 @@
+services:
+  zai-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zai-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - Z_AI_API_KEY=${Z_AI_API_KEY}
+      - PORT=3000
+      - HOST=0.0.0.0
+      - HISTORY_FILE=/app/history-data/history.json
+    volumes:
+      # Persist historical usage records across container updates
+      - history-data:/app/history-data
+    env_file:
+      - .env
+
+volumes:
+  history-data:

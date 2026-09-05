@@ -32,7 +32,7 @@ if (fs.existsSync(envPath)) {
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.resolve(__dirname, 'public');
-const HISTORY_FILE = path.resolve(__dirname, 'history.json');
+const HISTORY_FILE = process.env.HISTORY_FILE ? path.resolve(process.env.HISTORY_FILE) : path.resolve(__dirname, 'history.json');
 
 // Retrieve API key strictly from environment settings (no hardcoded keys committed to repo)
 const API_KEY = process.env.Z_AI_API_KEY;
@@ -155,6 +155,10 @@ const saveQuotaToHistoryFile = (data) => {
   if (!isDuplicate) {
     history.push(newCheckpoint);
     if (history.length > 500) history.shift(); // Keep last 500 entries
+    const historyDir = path.dirname(HISTORY_FILE);
+    if (!fs.existsSync(historyDir)) {
+      fs.mkdirSync(historyDir, { recursive: true });
+    }
     fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
     console.log(`[History Logging] Logged checkpoint to file: 5h=${pct5h}%, Weekly=${pctWeekly}%`);
   }
