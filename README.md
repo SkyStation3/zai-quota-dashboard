@@ -2,6 +2,10 @@
 
 A lightweight, zero-dependency Server-Side Rendered (SSR) dashboard to monitor and track your Z.ai GLM Coding Plan usage vs. remaining time before quota reset.
 
+<p align="center">
+  <img src="public/dashboard-preview.png" alt="Z.ai Coding Plan Quota Tracker Dashboard Preview" width="100%">
+</p>
+
 ---
 
 ## ✨ Features
