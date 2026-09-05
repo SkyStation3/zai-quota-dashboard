@@ -187,6 +187,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none';");
 
   // Enforce strictly read-only methods
   if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -217,15 +218,18 @@ const server = http.createServer((req, res) => {
       fs.readFile(filePath, 'utf8', (err, html) => {
         if (err) {
           res.writeHead(500, { 'Content-Type': 'text/plain' });
-          res.end('500 Server Error');
+          res.end('500 Internal Server Error');
           return;
         }
+
+        // Helper: Sanitize JSON for safe embedding into HTML script tags (< escaped to prevent XSS breakout)
+        const safeJson = (data) => JSON.stringify(data).replace(/</g, '\\u003c');
 
         // Inject initial data and history log directly into index.html
         const dataInjection = `
   <script>
-    window.__INITIAL_DATA__ = ${JSON.stringify(quotaData)};
-    window.__HISTORY_DATA__ = ${JSON.stringify(historyData)};
+    window.__INITIAL_DATA__ = ${safeJson(quotaData)};
+    window.__HISTORY_DATA__ = ${safeJson(historyData)};
     window.__SERVER_CONFIGURED__ = ${!!API_KEY};
     window.__SERVER_TIMESTAMP__ = ${Date.now()};
   </script>`;
@@ -238,8 +242,9 @@ const server = http.createServer((req, res) => {
         res.end(modifiedHtml);
       });
     }).catch(err => {
+      console.error(`[Server Error] SSR rendering failure: ${err.message}`);
       res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('500 Server Error: ' + err.message);
+      res.end('500 Internal Server Error');
     });
     return;
   }
